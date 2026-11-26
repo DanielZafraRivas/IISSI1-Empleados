@@ -65,6 +65,7 @@ DELIMITER ;
 DELIMITER //
 CREATE OR REPLACE FUNCTION f_num_subordinates (p_employee_id INT) 
 	RETURNS INT
+READS SQL DATA 
 BEGIN 
 	DECLARE v_contador_subordinados INT;
 	
@@ -111,7 +112,7 @@ BEGIN
 	END IF;
 	
 	IF (p_percentaje > 0 AND p_percentaje <= 10) THEN
-		UPDATE employees SET salary = salary * (1 + p_percentaje/100) WHERE department_id = p_department_id;
+		UPDATE employees SET salary = salary * (1 + p_percentaje/100) WHERE department_id = p_department_id AND (end_date > CURRENT_DATE OR end_date is NULL);
 	ELSE 
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = 'El porcentaje de subida debe estar entre 0 y 10';
@@ -125,13 +126,14 @@ DELIMITER ;
 -- ===============================================================================================================================
 DELIMITER //
 CREATE OR REPLACE FUNCTION f_seniority(p_employee_id INT) RETURNS INT 
+READS SQL DATA 
 BEGIN 
 	DECLARE v_years INT;
 	DECLARE v_start_date DATE;
 	
 	SELECT start_date INTO v_start_date FROM employees WHERE employee_id = p_employee_id;
 	
-	SELECT YEAR(CURRENT_DATE - v_start_date) INTO v_years;
+	SET v_years = TIMESTAMPDIFF(YEAR, v_start_date, CURRENT_DATE);    -- Es necesaria la llamada a TIMESTAMPDIFF para que sea exacto (tiene en cuenta los meses
 	
 	RETURN  v_years;
 END //
@@ -141,7 +143,7 @@ DELIMITER ;
 -- VAMOS A PROBARLO: 
 CALL p_populate();
 
--- En Arte (1) suben Pedro (2300 -> 2415) , Jose (2500 -> 2625) y Daniel (1500 -> 1575) ; Luis y Ana ya terminaron y no cambian
+-- En Arte (1) suben Pedro (2300 -> 2415) , Jose (2500 -> 2625) y Daniel (1500 -> 1575) ; Luis y Ana ya terminaron y no cambian (se quedan en 1300)
 CALL p_raise_department_salaries(1, 5);
 SELECT * FROM employees;
 

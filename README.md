@@ -16,14 +16,8 @@ de IISSI-1 (requisitos, modelos y solución de la parte base), para resolver «P
    cd IISSI1-Empleados
    ```
 
-   En VS Code también se puede hacer con **Clone Git Repository…** (`Ctrl+Shift+P` → *Git: Clone*)
-   y la URL de tu fork.
-3. **Cargar la base de datos** (`employees_db`) desde la carpeta del repositorio:
-
-   ```bash
-   mariadb < load_db.sql
-   ```
-
+3. **Cargar la base de datos** (`employees_db`) en HeidiSQL, ejecutando estos ficheros en este orden:
+   `create_db.sql`, `procedures.sql`, `triggers.sql`, `functions.sql` y `populate_db.sql`.
 4. **Trabajar**: añade tu solución en ficheros nuevos y súbela a tu fork:
 
    ```bash
@@ -39,8 +33,8 @@ de IISSI-1 (requisitos, modelos y solución de la parte base), para resolver «P
 | `load_db.sql` | Carga la BD de Empleados (esquema, rutinas, triggers y datos) |
 | `populate_db.sql` | Script para la carga inicial de datos de Empleados |
 | `procedures.sql` | Procedimientos de employees_db |
-| `queries.sql` | Consultas SQL de Empleados (las del tema 10, en el mismo orden) (`mariadb < queries.sql`) |
-| `tests.sql` | Tests negativos para la BD de Empleados (`mariadb < tests.sql`) |
+| `queries.sql` | Consultas SQL de Empleados (las del tema 10, en el mismo orden) |
+| `tests.sql` | Tests negativos para la BD de Empleados |
 | `triggers.sql` | Triggers de employees_db |
 
 <img src="uml/req2sql-empleados.svg" alt="Diagrama de clases" width="443">

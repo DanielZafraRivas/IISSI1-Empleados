@@ -143,6 +143,24 @@ BEGIN
 END //
 DELIMITER ;
 
+-- Necesitamos otro trigger para la actualizacion de categories:
+DELIMITER //
+CREATE OR REPLACE TRIGGER t_biu_categories_ra03
+BEFORE INSERT OR UPDATE ON categories
+FOR EACH ROW
+BEGIN 
+	
+	DECLARE v_count_employees_out INT;
+	
+	SELECT COUNT(*) INTO v_count_employees_out FROM employees WHERE category_id = NEW.category_id AND (salary < NEW.min_salary OR salary > NEW.max_salary);
+	
+	IF v_count_employees_out > 0 THEN 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = 'RA03: Hay empleados en esta categoría con un salario fuera de rango';
+	END IF; 
+END //
+DELIMITER ;
+
 -- VAMOS A PROBAR EL EJERCICIO 3:
 CALL p_populate();
 

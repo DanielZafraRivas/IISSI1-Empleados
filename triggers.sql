@@ -123,3 +123,35 @@ DELIMITER ;
 -- CALL p_populate();
 -- INSERT INTO employees (department_id, boss_id, name_emp, start_date, end_date, salary, fee)
 -- 	VALUES (3, NULL, 'Gabriel', NULL, NULL, 1000, 0.4);
+
+-- Para hacer la RA03, necesitamos hacer un trigger.   RA03: El salario de un empleado está entre el mínimo y el máximo de su categoría
+DELIMITER //
+CREATE OR REPLACE TRIGGER t_biu_employees_ra03
+BEFORE INSERT OR UPDATE ON employees
+FOR EACH ROW
+BEGIN 
+	
+	DECLARE v_min_salary INT;
+	DECLARE v_max_salary INT;
+	
+	SELECT min_salary, max_salary into v_min_salary, v_max_salary FROM categories WHERE category_id = NEW.category_id;
+	
+	IF (NEW.salary > v_max_salary OR NEW.salary < v_min_salary) THEN 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = 'RA03: El salario es inferior al minimo o superior al máximo';
+	END IF;
+END //
+DELIMITER ;
+
+-- VAMOS A PROBAR EL EJERCICIO 3:
+CALL p_populate();
+
+-- Daniel (6) es Junior: puede cobrar hasta 1999
+UPDATE employees SET salary = 1900 WHERE employee_id = 6;
+SELECT * FROM employees WHERE employee_id = 6; -- (cobraba 1500)
+
+-- Deben fallar:
+INSERT INTO categories (name_cat, min_salary, max_salary) VALUES ('Junior', 1500, 2500);  -- RA01 : no se pueden repetir los nombres
+INSERT INTO categories (name_cat, min_salary, max_salary) VALUES ('Directivo', 4000, 3000);  -- RA02 : el salario minimo no puede ser mayor que el maximo
+UPDATE employees SET salary = 2100 WHERE employee_id = 6;  -- RA03 : Daniel es junior (no puede cobrar mas de 1999)
+UPDATE categories SET max_salary = 2400 WHERE category_id = 2;  -- RA03: Jose es Senior (cobra 2500)
